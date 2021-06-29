@@ -5,10 +5,11 @@
 void UBullCowCartridge::BeginPlay() // When the game starts
 {
 	Super::BeginPlay();
+	
+	FBullCowCount Count;
+	Isograms = GetValidWords(Words);
 
 	InitGame();
-
-	Isograms = GetValidWords(Words);
 }
 
 void UBullCowCartridge::OnInput(const FString& PlayerInput) // When the player hits enter
@@ -79,10 +80,7 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess) {
 		return;
 	}
 
-	int32 Bulls, Cows;
-	GetBullCows(Guess, Bulls, Cows);
-
-	PrintLine(TEXT("You have %i Bulls and %i Cows"), Bulls, Cows);
+	FBullCowCount Score = GetBullCows(Guess);
 
 	PrintLine(TEXT("Guess again, you have %i lives left"), Lives);
 }
@@ -101,12 +99,12 @@ bool UBullCowCartridge::IsIsogram(const FString& Word) const {
 	return true;
 }
 
-TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& Words) const {
+TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& WordList) const {
 	TArray<FString> ValidWords;
 
-	for (FString Word : Words)
+	for (FString Word : WordList)
 	{
-		if (Word.Len() >= 4 && Word.Len() <= 8)
+		if (Word.Len() >= 4/* && Word.Len() <= 8*/)
 		{
 			if (IsIsogram(Word))
 			{
@@ -117,15 +115,16 @@ TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& Words) c
 	return ValidWords;
 }
 
-void UBullCowCartridge::GetBullCows(const FString& Guess, int32& BullCount, int32& CowCount) const {
-	BullCount = 0;
-	CowCount = 0;
+
+
+FBullCowCount UBullCowCartridge::GetBullCows(const FString& Guess) const {
+	FBullCowCount Count;
 
 	for (int32 i = 0; i < Guess.Len(); i++)
 	{
 		if (Guess[i] == HiddenWord[i])
 		{
-			BullCount++;
+			Count.Bulls++;
 			continue;
 		}
 
@@ -133,8 +132,10 @@ void UBullCowCartridge::GetBullCows(const FString& Guess, int32& BullCount, int3
 		{
 			if (Guess[i] == HiddenWord[j])
 			{
-				CowCount++;
+				Count.Cows++;
+				break;
 			}
 		}
 	}
+	return Count;
 }
